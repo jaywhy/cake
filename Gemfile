@@ -4,3 +4,4 @@ source "https://rubygems.org"
 # gemspec
 gem 'tty-cursor'
 gem 'curses'
+gem "tty-reader"
