@@ -36,9 +36,7 @@ class Cake
       when :down
         pos.decrement
       when nil
-        if !char.nil?
-          input << char
-        end
+        input << char unless char.nil?
       end
 
       search(input)
