@@ -5,51 +5,75 @@ require_relative 'position'
 require_relative 'fuzzy_finder'
 require_relative 'formatter'
 
-formatter = Formatter.new
-ff = FuzzyFinder.new(Gem::Specification.all_names)
-screen = Screen.new
-pos = Position.new
+class Cake
+  attr_reader :formatter, :ff, :screen, :pos, :reader, :input
 
-screen.clear
-screen.output formatter.format_list(ff.matches, pos.position)
-screen.print_prompt
-
-input = ""
-reader = TTY::Reader.new
-reader.on(:keyctrl_x, :keyescape) do
-  puts "Exiting..."
-  exit
-end
-
-reader.on(:keyreturn) do
-  screen.carriage_return
-  puts ff.search(input)[-pos.position].string
-  exit
-end
-
-
-reader.on(:keybackspace) do
-  input.chop!
-
-  screen.print_screen(
-    formatter.output_list(ff.search(input), pos.position)
+  def initialize(
+    list,
+    formatter = Formatter.new,
+    ff = FuzzyFinder.new(list),
+    screen = Screen.new,
+    pos = Position.new,
+    reader = TTY::Reader.new(interrupt: :exit)
   )
-end
+    @formatter = formatter
+    @ff = ff
+    @screen = screen
+    @pos = pos
+    @reader = reader
+    @input = ""
 
-loop do
-  char = reader.read_keypress
-  case reader.console.keys[char]
-  when :up
-    pos.increment
-  when :down
-    pos.decrement
-  when nil
-    input << char
+    setup
   end
 
-  screen.print_screen(
-    formatter.output_list(ff.search(input), pos.position)
-  )
+  def bake
+    loop do
+      char = reader.read_keypress
 
-  screen.print_prompt(input)
+      case reader.console.keys[char]
+      when :up
+        pos.increment
+      when :down
+        pos.decrement
+      when nil
+        if !char.nil?
+          input << char
+        end
+      end
+
+      search(input)
+      screen.print_prompt(input)
+    end
+  end
+
+  def search(input)
+    screen.print_screen(
+      formatter.output_list(ff.search(input), pos.position)
+    )
+  end
+
+  private
+
+  def setup
+    screen.clear
+    screen.output formatter.format_list(ff.matches, pos.position)
+    screen.print_prompt
+
+    reader.on(:keyctrl_x, :keyescape) do
+      puts "Exiting..."
+      exit
+    end
+
+    reader.on(:keyreturn) do
+      screen.carriage_return
+      puts ff.search(input)[-pos.position].string
+      exit
+    end
+
+
+    reader.on(:keybackspace) do
+      input.chop!
+      search(input)
+    end
+  end
 end
