@@ -8,18 +8,22 @@ class Screen
   def print_screen(output)
     carriage_return
     clear
-    print output
+    output output
   end
 
   def print_prompt(str = "")
-    print "#{prompt} #{str}"
+    output "#{prompt} #{str}"
   end
 
   def carriage_return
     puts "\r"
   end
 
+  def output(out)
+    print out
+  end
+
   def clear
-    print "\e[2J"
+    output "\e[2J"
   end
 end

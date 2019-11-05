@@ -1,34 +1,17 @@
-
 require 'tty-reader'
 
 require_relative 'screen'
+require_relative 'position'
 require_relative 'fuzzy_finder'
+require_relative 'formatter'
 
-position = 1
-
-def format_list(list, position)
-  list.reduce("") do |accum, l|
-    if list[-position].string == l.string
-      accum + " \e[31m>\e[39m " + l.string + "\r\n"
-    else
-      accum + "   " + l.string + "\r\n"
-    end
-  end
-end
-
-def debug(list)
-  list.reduce('') { |accum, l| accum + l.inspect + "\r\n" }
-end
-
-
-list = Gem::Specification.all_names
-
-ff = FuzzyFinder.new(list)
+formatter = Formatter.new
+ff = FuzzyFinder.new(Gem::Specification.all_names)
 screen = Screen.new
-str = ''
+pos = Position.new
 
 screen.clear
-print format_list(ff.matches, position)
+screen.output formatter.format_list(ff.matches, pos.position)
 screen.print_prompt
 
 input = ""
@@ -39,27 +22,34 @@ reader.on(:keyctrl_x, :keyescape) do
 end
 
 reader.on(:keyreturn) do
-  print "\r"
-  puts ff.search(input)[-position].string
+  screen.carriage_return
+  puts ff.search(input)[-pos.position].string
   exit
 end
 
+
 reader.on(:keybackspace) do
   input.chop!
-  screen.print_screen(format_list(ff.search(input), position))
+
+  screen.print_screen(
+    formatter.output_list(ff.search(input), pos.position)
+  )
 end
 
 loop do
   char = reader.read_keypress
   case reader.console.keys[char]
   when :up
-    position += 1
+    pos.increment
   when :down
-    position = position > 1 ? position - 1 : 1
+    pos.decrement
   when nil
     input << char
   end
 
-  screen.print_screen(format_list(ff.search(input), position))
+  screen.print_screen(
+    formatter.output_list(ff.search(input), pos.position)
+  )
+
   screen.print_prompt(input)
 end
