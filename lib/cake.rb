@@ -56,7 +56,7 @@ class Cake
 
   def setup
     screen.clear
-    screen.output formatter.format_list(ff.matches, pos.position)
+    screen.output formatter.output_list(ff.matches, pos.position)
     screen.print_prompt
 
     reader.on(:keyctrl_x, :keyescape) do

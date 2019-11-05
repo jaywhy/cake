@@ -2,10 +2,6 @@ class Formatter
   attr_reader :finder
 
   def output_list(list, position)
-    format_list(list, position)
-  end
-
-  def format_list(list, position)
     list.reduce("") do |accum, l|
       if list[-position].string == l.string
         accum + " \e[31m>\e[39m " + l.string + "\r\n"
