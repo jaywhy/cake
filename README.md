@@ -8,4 +8,4 @@ It doesn't work yet. Sue me.
 
 ## License
 
-Cake is release under the [MIT License]("https://opensource.org/licenses/MIT").
+Cake is released under the [MIT License]("https://opensource.org/licenses/MIT").
